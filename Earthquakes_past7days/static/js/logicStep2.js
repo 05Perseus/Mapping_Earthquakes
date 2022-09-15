@@ -33,22 +33,40 @@ let map = L.map('mapid', {
 // Pass our map layers into our layers control and add the layers control to the map.
 L.control.layers(baseMaps).addTo(map);
 
+// This function returns the style data for each of the earthquakes we plot on
+// the map. We pass the magnitude of the earthquake into a function
+// to calculate the radius.
+function styleInfo(feature) {
+    return {
+      opacity: 1,
+      fillOpacity: 1,
+      fillColor: "#ffae42",
+      color: "#000000",
+      radius: getRadius(),
+      stroke: true,
+      weight: 0.5
+    };
+  }
+
+// This function determines the radius of the earthquake marker based on its magnitude.
+// Earthquakes with a magnitude of 0 will be plotted with a radius of 1.
+function getRadius(magnitude) {
+    if (magnitude === 0) {
+      return 1;
+    }
+    return magnitude * 4;
+  };
+
 
 let lastEarthquakes = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
 
 d3.json(lastEarthquakes).then(function(data){
-    console.log(data);
     // create geojson level
     L.geoJSON(data, {
-        onEachFeature: function(feature, layer) {
-            layer
-            .setStyle({
-                color: "blue",
-                weight:1,
-                fillColor:"lightyellow"
-            })            
-            .bindPopup("<h3>Neighborhood: "+ feature.properties.AREA_NAME +"</h3>");
-        }
-    })
-    .addTo(map);
+        pointToLayer: function(feature, latlng) {
+            console.log(data);
+            return L.circleMarker(latlng);
+        },
+        style: styleInfo
+    }).addTo(map);
 });
